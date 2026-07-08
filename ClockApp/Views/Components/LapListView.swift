@@ -46,7 +46,7 @@ struct LapListView: View {
                 lapRow(number: index + 1, duration: duration, color: color(for: index))
             }
         }
-        .scrollDisabled(true)
+        .scrollDisabled(false)
         .scrollContentBackground(.hidden)
         .listStyle(.plain)
     }

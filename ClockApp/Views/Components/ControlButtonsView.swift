@@ -12,36 +12,42 @@ struct ControlButtonsView: View {
     let stopwatch: StopwatchViewModel
 
     var body: some View {
-        HStack {
-            Button {
-                stopwatch.isRunning ? stopwatch.addLap() : stopwatch.reset()
-            } label: {
-                Text(stopwatch.isRunning ? "Lap" : "Reset")
-                    .font(.system(size: 20, weight: .regular, design: .default))
-                    .foregroundStyle(.gray)
-                    .padding(30)
-                    .background(Color.gray.opacity(0.2))
-                    .clipShape(Circle())
+        let isLapOrResetEnabled = stopwatch.isRunning || stopwatch.time() > 0
 
+        ZStack {
+            HStack {
+                Button {
+                    if stopwatch.isRunning {
+                        stopwatch.addLap()
+                    } else if isLapOrResetEnabled {
+                        stopwatch.reset()
+                    }
+                } label: {
+                    Text(stopwatch.isRunning ? "Lap" : "Reset")
+                        .font(.system(size: 18, weight: .regular, design: .default))
+                        .foregroundStyle(isLapOrResetEnabled ? .white : .gray)
+                        .frame(width: 80, height: 80)
+                        .background((isLapOrResetEnabled ? Color.gray.opacity(0.35) : Color.gray.opacity(0.2)))
+                        .clipShape(Circle())
+
+                }
+
+                Spacer()
+
+                Button {
+                    stopwatch.toggle()
+                } label: {
+                    Text(stopwatch.isRunning ? "Stop" : "Start")
+                        .font(.system(size: 18, weight: .regular, design: .default))
+                        .foregroundStyle(stopwatch.isRunning ? .red : .green)
+                        .frame(width: 80, height: 80)
+                        .background((stopwatch.isRunning ? Color.red : Color.green).opacity(0.2))
+                        .clipShape(Circle())
+
+                }
             }
-
-            Spacer()
 
             PageIndicatorDots(selection: selection, count: 2)
-
-            Spacer()
-
-            Button {
-                stopwatch.toggle()
-            } label: {
-                Text(stopwatch.isRunning ? "Stop" : "Start")
-                    .font(.system(size: 20, weight: .regular, design: .default))
-                    .foregroundStyle(stopwatch.isRunning ? .red : .green)
-                    .padding(30)
-                    .background((stopwatch.isRunning ? Color.red : Color.green).opacity(0.2))
-                    .clipShape(Circle())
-
-            }
         }
         .padding()
         .frame(height: 120)

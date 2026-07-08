@@ -14,22 +14,18 @@ struct ClockView: View {
     var body: some View {
         GeometryReader { geo in
             ScrollView {
-                content
-                    .frame(minHeight: geo.size.height)
+                VStack(spacing: .zero) {
+                    ClockDisplayView(selection: $selectedFace, stopwatch: stopwatch)
+
+                    ControlButtonsView(selection: $selectedFace, stopwatch: stopwatch)
+
+                    Divider()
+                        .padding(.horizontal)
+
+                    LapListView(stopwatch: stopwatch)
+                }
+                .frame(minHeight: geo.size.height, alignment: .top)
             }
-        }
-    }
-
-    private var content: some View {
-        VStack(spacing: .zero) {
-            ClockDisplayView(selection: $selectedFace, stopwatch: stopwatch)
-
-            ControlButtonsView(selection: $selectedFace, stopwatch: stopwatch)
-
-            Divider()
-                .padding(.horizontal)
-
-            LapListView(stopwatch: stopwatch)
         }
     }
 }

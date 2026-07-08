@@ -13,9 +13,7 @@ final class StopwatchViewModel {
     private(set) var isRunning = false
     private(set) var laps: [TimeInterval] = []
     private(set) var referenceDate = Date()
-
-    private var accumulatedTime: TimeInterval = 0
-    private var lastLapMark: TimeInterval = 0
+    private(set) var lapMark: TimeInterval = 0
 
     static func format(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
@@ -28,8 +26,10 @@ final class StopwatchViewModel {
         isRunning ? accumulatedTime + date.timeIntervalSince(referenceDate) : accumulatedTime
     }
 
+    private var accumulatedTime: TimeInterval = 0
+
     func currentLap(at date: Date = .now) -> TimeInterval {
-        time(at: date) - lastLapMark
+        time(at: date) - lapMark
     }
 
     func toggle() {
@@ -44,13 +44,13 @@ final class StopwatchViewModel {
 
     func addLap() {
         let current = time(at: .now)
-        laps.append(current - lastLapMark)
-        lastLapMark = current
+        laps.append(current - lapMark)
+        lapMark = current
     }
 
     func reset() {
         accumulatedTime = 0
         laps = []
-        lastLapMark = 0
+        lapMark = 0
     }
 }

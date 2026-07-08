@@ -11,7 +11,8 @@ struct AnalogClockFace: View {
     let stopwatch: StopwatchViewModel
 
     private let majorValues = [60, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
-    private let appleOrange = Color(red: 1.0, green: 149.0 / 255.0, blue: 0)
+    private let orangeColor = Color(red: 1.0, green: 149.0 / 255.0, blue: 0)
+    private let lapBlue = Color(red: 0.0, green: 0.48, blue: 1.0)
     private let tickWidth: CGFloat = 2.0
 
     var body: some View {
@@ -48,36 +49,71 @@ struct AnalogClockFace: View {
 
     private func content(for elapsed: TimeInterval, radius: CGFloat) -> some View {
         let angle = elapsed.truncatingRemainder(dividingBy: 60) / 60 * 360
+        let lapAngle = stopwatch.currentLap().truncatingRemainder(dividingBy: 60) / 60 * 360
 
         return ZStack {
+            if !stopwatch.laps.isEmpty {
+                lapHand(radius: radius)
+                    .rotationEffect(.degrees(lapAngle))
+            }
+
             secondHand(radius: radius)
                 .rotationEffect(.degrees(angle))
 
             Text(StopwatchViewModel.format(elapsed))
-                .font(.system(size: 20, weight: .regular))
+                .font(.system(size: 16, weight: .regular))
                 .foregroundStyle(.white)
                 .monospacedDigit()
-                .offset(y: radius * 0.22)
+                .offset(y: radius * 0.35)
+        }
+    }
+
+    private func lapHand(radius: CGFloat) -> some View {
+        let needleLength = radius - 6
+        let tailLength = radius * 0.22
+
+        return ZStack {
+            Rectangle()
+                .fill(lapBlue)
+                .frame(width: tickWidth, height: needleLength)
+                .offset(y: -needleLength / 2)
+
+            Rectangle()
+                .fill(lapBlue)
+                .frame(width: tickWidth, height: tailLength)
+                .offset(y: tailLength / 2)
+
+            Circle()
+                .fill(Color.black)
+                .frame(width: 8, height: 8)
+
+            Circle()
+                .stroke(lapBlue, lineWidth: tickWidth)
+                .frame(width: 8, height: 8)
         }
     }
 
     private func secondHand(radius: CGFloat) -> some View {
         let needleLength = radius - 6
-        let tailLength = radius * 0.08
+        let tailLength = radius * 0.22
 
         return ZStack {
             Rectangle()
-                .fill(appleOrange)
+                .fill(orangeColor)
                 .frame(width: tickWidth, height: needleLength)
                 .offset(y: -needleLength / 2)
 
             Rectangle()
-                .fill(appleOrange)
+                .fill(orangeColor)
                 .frame(width: tickWidth, height: tailLength)
                 .offset(y: tailLength / 2)
 
             Circle()
-                .stroke(appleOrange, lineWidth: tickWidth)
+                .fill(Color.black)
+                .frame(width: 8, height: 8)
+
+            Circle()
+                .stroke(orangeColor, lineWidth: tickWidth)
                 .frame(width: 8, height: 8)
         }
     }
