@@ -11,7 +11,7 @@ import SwiftUI
 struct ClockAppApp: App {
     var body: some Scene {
         WindowGroup {
-            ClockView()
+            ContentView()
         }
     }
 }
