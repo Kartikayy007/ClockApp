@@ -15,6 +15,8 @@ final class StopwatchViewModel {
     private(set) var referenceDate = Date()
     private(set) var lapMark: TimeInterval = 0
 
+    private var accumulatedTime: TimeInterval = 0
+
     static func format(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
@@ -25,8 +27,6 @@ final class StopwatchViewModel {
     func time(at date: Date = .now) -> TimeInterval {
         isRunning ? accumulatedTime + date.timeIntervalSince(referenceDate) : accumulatedTime
     }
-
-    private var accumulatedTime: TimeInterval = 0
 
     func currentLap(at date: Date = .now) -> TimeInterval {
         time(at: date) - lapMark
@@ -40,17 +40,47 @@ final class StopwatchViewModel {
             referenceDate = .now
             isRunning = true
         }
+        Task { await StopwatchLiveActivityManager.shared.sync(from: self) }
     }
 
     func addLap() {
         let current = time(at: .now)
         laps.append(current - lapMark)
         lapMark = current
+        Task { await StopwatchLiveActivityManager.shared.sync(from: self) }
     }
 
     func reset() {
         accumulatedTime = 0
         laps = []
         lapMark = 0
+        isRunning = false
+        Task { await StopwatchLiveActivityManager.shared.sync(from: self) }
+    }
+
+    func restore(from state: StopwatchAttributes.ContentState) {
+        isRunning = state.isRunning
+        lapMark = state.lapMark
+        if state.isRunning, let startedAt = state.startedAt {
+            accumulatedTime = 0
+            referenceDate = startedAt
+        } else {
+            accumulatedTime = state.accumulatedTime
+        }
+    }
+
+    func liveActivityState() -> StopwatchAttributes.ContentState {
+        let timerStart = isRunning
+            ? referenceDate.addingTimeInterval(-accumulatedTime)
+            : nil
+
+        return StopwatchAttributes.ContentState(
+            isRunning: isRunning,
+            startedAt: timerStart,
+            accumulatedTime: isRunning ? 0 : accumulatedTime,
+            lapCount: laps.count,
+            lastLapDuration: laps.last ?? 0,
+            lapMark: lapMark
+        )
     }
 }

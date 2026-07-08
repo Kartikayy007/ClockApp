@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
-import Combine
 
 struct ContentView: View {
+    @State private var stopwatch = StopwatchViewModel()
+
     var body: some View {
-        ClockView()
+        ClockView(stopwatch: stopwatch)
     }
 }
 

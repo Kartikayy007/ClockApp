@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct ClockView: View {
+    @Bindable var stopwatch: StopwatchViewModel
     @State private var selectedFace: Int = 0
-    @State private var stopwatch = StopwatchViewModel()
 
     var body: some View {
         GeometryReader { geo in
@@ -31,5 +31,5 @@ struct ClockView: View {
 }
 
 #Preview {
-    ClockView()
+    ClockView(stopwatch: StopwatchViewModel())
 }
