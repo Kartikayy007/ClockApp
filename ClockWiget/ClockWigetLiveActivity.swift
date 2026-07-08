@@ -48,13 +48,13 @@ struct ClockWigetLiveActivity: Widget {
             if !state.isRunning {
                 Circle()
                     .fill(.black)
-                    .frame(width: size * 0.72, height: size * 0.72)
-                    .offset(y: size * 0.11)
+                    .frame(width: size * 0.7, height: size * 0.88)
+                    .offset(y: size * 0.06)
 
                 Image(systemName: "pause.fill")
                     .font(.system(size: size * 0.34, weight: .black))
                     .foregroundStyle(stopwatchOrange)
-                    .offset(y: size * 0.11)
+                    .offset(y: size * 0.06)
             }
         }
     }
