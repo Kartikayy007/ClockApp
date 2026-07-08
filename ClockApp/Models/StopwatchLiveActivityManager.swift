@@ -27,7 +27,6 @@ final class StopwatchLiveActivityManager {
             return
         }
 
-        // Reattach after process restart / hot reload.
         if activity == nil {
             activity = Activity<StopwatchAttributes>.activities.first
         }
@@ -47,7 +46,7 @@ final class StopwatchLiveActivityManager {
                 pushType: nil
             )
         } catch {
-            // System may deny Live Activities; ignore quietly.
+            activity = nil
         }
     }
 
