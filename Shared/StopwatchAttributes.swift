@@ -2,6 +2,8 @@
 //  StopwatchAttributes.swift
 //  StopwatchAttributes
 //
+//  Created by kartikay on 08/07/26.
+//
 
 import ActivityKit
 import Foundation
@@ -11,6 +13,7 @@ struct StopwatchAttributes: ActivityAttributes {
         var isRunning: Bool
         var startedAt: Date?
         var accumulatedTime: TimeInterval
+        var laps: [TimeInterval]
         var lapCount: Int
         var lastLapDuration: TimeInterval
         var lapMark: TimeInterval
@@ -29,7 +32,6 @@ struct StopwatchAttributes: ActivityAttributes {
             return String(format: "%d:%02d", minutes, seconds)
         }
 
-        /// Zero-padded `MM:SS` for expanded island lap labels (`00:14`).
         static func formatPadded(_ time: TimeInterval) -> String {
             let totalSeconds = Int(time)
             let minutes = totalSeconds / 60

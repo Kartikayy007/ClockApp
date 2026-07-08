@@ -16,6 +16,7 @@ struct ClockAppApp: App {
     var body: some Scene {
         WindowGroup {
             ClockView(stopwatch: stopwatch)
+                .preferredColorScheme(.dark)
                 .onOpenURL { url in
                     handleDeepLink(url)
                 }

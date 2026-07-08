@@ -11,6 +11,7 @@ import SwiftUI
 import AppIntents
 
 private let stopwatchOrange = Color(red: 1.0, green: 149.0 / 255.0, blue: 0)
+private let lockScreenButtonSize: CGFloat = 44
 struct ClockWigetLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: StopwatchAttributes.self) { context in
@@ -47,7 +48,7 @@ struct ClockWigetLiveActivity: Widget {
             if !state.isRunning {
                 Circle()
                     .fill(.black)
-                    .frame(width: size * 0.48, height: size * 0.48)
+                    .frame(width: size * 0.72, height: size * 0.72)
                     .offset(y: size * 0.11)
 
                 Image(systemName: "pause.fill")
@@ -60,8 +61,6 @@ struct ClockWigetLiveActivity: Widget {
 
     @ViewBuilder
     private func compactTime(_ state: StopwatchAttributes.ContentState) -> some View {
-        // Live Activities don't allow custom high-frequency timers (TimelineView).
-        // Text(timerInterval:) is the system path that keeps seconds ticking.
         Group {
             if state.isRunning, let startedAt = state.startedAt {
                 Text(
@@ -193,24 +192,112 @@ struct ClockWigetLiveActivity: Widget {
     }
 
     private func lockScreenView(context: ActivityViewContext<StopwatchAttributes>) -> some View {
-        HStack {
-            Image(systemName: "stopwatch.fill")
-                .foregroundStyle(stopwatchOrange)
+        HStack(alignment: .center, spacing: 12) {
+            lockScreenControls(context: context)
+            Spacer(minLength: 0)
+            lockScreenTimerColumn(context: context)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
 
-            VStack(alignment: .trailing, spacing: 2) {
-                if context.state.lapCount > 0 {
-                    Text(
-                        "LAP \(context.state.lapCount) \(StopwatchAttributes.ContentState.formatPadded(context.state.lastLapDuration))"
-                    )
-                    .font(.system(size: 8, weight: .regular, design: .default))
-                    .foregroundStyle(stopwatchOrange)
-                    .monospacedDigit()
+    private func lockScreenControls(context: ActivityViewContext<StopwatchAttributes>) -> some View {
+        HStack(spacing: 8) {
+            Button(intent: ToggleStopwatchIntent()) {
+                ZStack {
+                    Circle()
+                        .fill(Color(red: 0.35, green: 0.18, blue: 0.05).opacity(0.6))
+                    Image(systemName: context.state.isRunning ? "pause.fill" : "play.fill")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(stopwatchOrange)
                 }
-                expandedPrimaryTimer(context.state)
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(stopwatchOrange)
-                    .monospacedDigit()
+                .frame(width: lockScreenButtonSize, height: lockScreenButtonSize)
             }
+            .buttonStyle(.plain)
+
+            if context.state.isRunning {
+                Button(intent: LapStopwatchIntent()) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.white.opacity(0.25))
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.9))
+                    }
+                    .frame(width: lockScreenButtonSize, height: lockScreenButtonSize)
+                }
+                .buttonStyle(.plain)
+            } else {
+                Button(intent: ResetStopwatchIntent()) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.white.opacity(0.25))
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.9))
+                    }
+                    .frame(width: lockScreenButtonSize, height: lockScreenButtonSize)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private func lockScreenTimerColumn(context: ActivityViewContext<StopwatchAttributes>) -> some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            if context.state.lapCount > 0 {
+                lockScreenLapRow(context.state)
+            }
+            lockScreenPrimaryTimer(context.state)
+                .font(.system(size: 36, weight: .medium))
+                .foregroundStyle(stopwatchOrange)
+                .monospacedDigit()
+                .multilineTextAlignment(.trailing)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+    }
+
+    private func lockScreenLapRow(_ state: StopwatchAttributes.ContentState) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text("LAP \(state.lapCount + 1)")
+            lockScreenLapTimer(state)
+        }
+        .font(.system(size: 14, weight: .semibold, design: .rounded))
+        .foregroundStyle(stopwatchOrange)
+        .monospacedDigit()
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+    }
+
+    @ViewBuilder
+    private func lockScreenLapTimer(_ state: StopwatchAttributes.ContentState) -> some View {
+        if state.isRunning, let startedAt = state.startedAt {
+            let lapStartedAt = startedAt.addingTimeInterval(state.lapMark)
+            Text(
+                timerInterval: lapStartedAt...lapStartedAt.addingTimeInterval(9 * 60 * 60),
+                countsDown: false,
+                showsHours: false
+            )
+            .frame(width: 44, alignment: .trailing)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+        } else {
+            Text(StopwatchAttributes.ContentState.formatPadded(state.accumulatedTime - state.lapMark))
+        }
+    }
+
+    @ViewBuilder
+    private func lockScreenPrimaryTimer(_ state: StopwatchAttributes.ContentState) -> some View {
+        if state.isRunning, let startedAt = state.startedAt {
+            Text(
+                timerInterval: startedAt...startedAt.addingTimeInterval(9 * 60 * 60),
+                countsDown: false,
+                showsHours: false
+            )
+        } else {
+            Text(StopwatchAttributes.ContentState.formatPadded(state.accumulatedTime))
         }
     }
 }
@@ -225,6 +312,7 @@ extension StopwatchAttributes.ContentState {
             isRunning: true,
             startedAt: Date().addingTimeInterval(-15),
             accumulatedTime: 0,
+            laps: [],
             lapCount: 0,
             lastLapDuration: 0,
             lapMark: 0
@@ -236,8 +324,9 @@ extension StopwatchAttributes.ContentState {
             isRunning: true,
             startedAt: Date().addingTimeInterval(-15),
             accumulatedTime: 0,
+            laps: [14, 16],
             lapCount: 2,
-            lastLapDuration: 14,
+            lastLapDuration: 16,
             lapMark: 30
         )
     }
@@ -247,6 +336,7 @@ extension StopwatchAttributes.ContentState {
             isRunning: false,
             startedAt: nil,
             accumulatedTime: 92.5,
+            laps: [20.1, 32.2, 20.1],
             lapCount: 3,
             lastLapDuration: 20.1,
             lapMark: 72.4
@@ -254,11 +344,21 @@ extension StopwatchAttributes.ContentState {
     }
 }
 
-#Preview("Lock Screen", as: .content, using: StopwatchAttributes.preview) {
+#Preview("Lock Screen No Lap", as: .content, using: StopwatchAttributes.preview) {
     ClockWigetLiveActivity()
 } contentStates: {
     StopwatchAttributes.ContentState.running
+}
+
+#Preview("Lock Screen With Lap", as: .content, using: StopwatchAttributes.preview) {
+    ClockWigetLiveActivity()
+} contentStates: {
     StopwatchAttributes.ContentState.runningWithLaps
+}
+
+#Preview("Lock Screen Paused", as: .content, using: StopwatchAttributes.preview) {
+    ClockWigetLiveActivity()
+} contentStates: {
     StopwatchAttributes.ContentState.paused
 }
 

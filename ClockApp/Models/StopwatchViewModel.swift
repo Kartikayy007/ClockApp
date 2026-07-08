@@ -61,6 +61,7 @@ final class StopwatchViewModel {
     func restore(from state: StopwatchAttributes.ContentState) {
         isRunning = state.isRunning
         lapMark = state.lapMark
+        laps = state.laps
         if state.isRunning, let startedAt = state.startedAt {
             accumulatedTime = 0
             referenceDate = startedAt
@@ -78,6 +79,7 @@ final class StopwatchViewModel {
             isRunning: isRunning,
             startedAt: timerStart,
             accumulatedTime: isRunning ? 0 : accumulatedTime,
+            laps: laps,
             lapCount: laps.count,
             lastLapDuration: laps.last ?? 0,
             lapMark: lapMark

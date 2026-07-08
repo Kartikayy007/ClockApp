@@ -2,6 +2,8 @@
 //  StopwatchLiveActivityActions.swift
 //  Shared
 //
+//  Created by kartikay on 08/07/26.
+//
 
 import ActivityKit
 import Foundation
@@ -35,9 +37,10 @@ enum StopwatchLiveActivityActions {
         case .lap:
             guard state.isRunning, let startedAt = state.startedAt else { return }
             let elapsed = max(0, now.timeIntervalSince(startedAt))
-            state.lastLapDuration = elapsed - state.lapMark
-            state.lapCount += 1
+            state.laps.append(elapsed - state.lapMark)
             state.lapMark = elapsed
+            state.lapCount = state.laps.count
+            state.lastLapDuration = state.laps.last ?? 0
 
         case .reset:
             await activity.end(
