@@ -69,7 +69,7 @@ struct ClockWigetLiveActivity: Widget {
                     showsHours: false
                 )
             } else {
-                Text(compactMainTime(state.accumulatedTime))
+                Text(StopwatchAttributes.ContentState.formatPadded(state.accumulatedTime))
             }
         }
         .font(.caption)
@@ -80,14 +80,6 @@ struct ClockWigetLiveActivity: Widget {
         .frame(width: 44, alignment: .trailing)
         .padding(.trailing, 1)
     }
-
-    private func compactMainTime(_ time: TimeInterval) -> String {
-        let totalSeconds = Int(time)
-        let minutes = totalSeconds / 60
-        let seconds = totalSeconds % 60
-        return String(format: "%d:%02d", minutes, seconds)
-    }
-
 
     private func expandedLeading(context: ActivityViewContext<StopwatchAttributes>) -> some View {
         HStack(spacing: 10) {
@@ -187,7 +179,7 @@ struct ClockWigetLiveActivity: Widget {
                 showsHours: false
             )
         } else {
-            Text(compactMainTime(state.accumulatedTime))
+            Text(StopwatchAttributes.ContentState.formatPadded(state.accumulatedTime))
         }
     }
 
