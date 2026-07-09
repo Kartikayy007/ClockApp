@@ -88,6 +88,14 @@ struct ClockWigetLiveActivity: Widget {
         return String(format: "%d:%02d", minutes, seconds)
     }
 
+    private func paddedHMS(_ time: TimeInterval) -> String {
+        let totalSeconds = max(0, Int(time))
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+
 
     private func expandedLeading(context: ActivityViewContext<StopwatchAttributes>) -> some View {
         HStack(spacing: 10) {
@@ -137,14 +145,14 @@ struct ClockWigetLiveActivity: Widget {
             .multilineTextAlignment(.trailing)
             .minimumScaleFactor(0.7)
             .lineLimit(1)
-            .frame(width: 96, alignment: .trailing)
+            .frame(width: 110, alignment: .trailing)
             .overlay(alignment: .topTrailing) {
                 if context.state.lapCount > 0 {
                     expandedLapRow(context.state)
                         .offset(y: -15)
                 }
             }
-            .frame(width: 96, alignment: .trailing)
+            .frame(width: 110, alignment: .trailing)
             .padding(.trailing, 12)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .offset(y: context.state.lapCount > 0 ? 6 : 0)
@@ -161,7 +169,7 @@ struct ClockWigetLiveActivity: Widget {
         .monospacedDigit()
         .lineLimit(1)
         .minimumScaleFactor(0.8)
-        .frame(maxWidth: 88, alignment: .trailing)
+        .frame(maxWidth: 100, alignment: .trailing)
     }
 
     @ViewBuilder
@@ -181,13 +189,11 @@ struct ClockWigetLiveActivity: Widget {
     @ViewBuilder
     private func expandedPrimaryTimer(_ state: StopwatchAttributes.ContentState) -> some View {
         if state.isRunning, let startedAt = state.startedAt {
-            Text(
-                timerInterval: startedAt...startedAt.addingTimeInterval(9 * 60 * 60),
-                countsDown: false,
-                showsHours: false
-            )
+            TimelineView(.periodic(from: startedAt, by: 1)) { context in
+                Text(paddedHMS(context.date.timeIntervalSince(startedAt)))
+            }
         } else {
-            Text(compactMainTime(state.accumulatedTime))
+            Text(paddedHMS(state.accumulatedTime))
         }
     }
 
@@ -291,13 +297,11 @@ struct ClockWigetLiveActivity: Widget {
     @ViewBuilder
     private func lockScreenPrimaryTimer(_ state: StopwatchAttributes.ContentState) -> some View {
         if state.isRunning, let startedAt = state.startedAt {
-            Text(
-                timerInterval: startedAt...startedAt.addingTimeInterval(9 * 60 * 60),
-                countsDown: false,
-                showsHours: false
-            )
+            TimelineView(.periodic(from: startedAt, by: 1)) { context in
+                Text(paddedHMS(context.date.timeIntervalSince(startedAt)))
+            }
         } else {
-            Text(StopwatchAttributes.ContentState.formatPadded(state.accumulatedTime))
+            Text(paddedHMS(state.accumulatedTime))
         }
     }
 }
